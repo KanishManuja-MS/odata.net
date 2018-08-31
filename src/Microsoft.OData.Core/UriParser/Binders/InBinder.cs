@@ -77,25 +77,10 @@ namespace Microsoft.OData.UriParser
             LiteralToken literalToken = queryToken as LiteralToken;
             if (literalToken != null)
             {
-                string originalLiteralText = literalToken.OriginalText;
-
-                // Parentheses-based collections are not standard JSON but bracket-based ones are.
-                // Temporarily switch our collection to bracket-based so that the JSON reader will
-                // correctly parse the collection. Then pass the original literal text to the token.
-                string bracketLiteralText = originalLiteralText;
-                if (bracketLiteralText[0] == '(')
-                {
-                    Debug.Assert(bracketLiteralText[bracketLiteralText.Length - 1] == ')',
-                        "Collection with opening '(' should have corresponding ')'");
-
-                    StringBuilder replacedText = new StringBuilder(bracketLiteralText);
-                    replacedText[0] = '[';
-                    replacedText[replacedText.Length - 1] = ']';
-                    bracketLiteralText = replacedText.ToString();
-                }
-
-                object collection = ODataUriConversionUtils.ConvertFromCollectionValue(bracketLiteralText, model, expectedType);
-                LiteralToken collectionLiteralToken = new LiteralToken(collection, originalLiteralText, expectedType);
+                string jsonReadableLiteralText = MakeJSONReadable(literalToken.OriginalText);
+              
+                object collection = ODataUriConversionUtils.ConvertFromCollectionValue(jsonReadableLiteralText, model, expectedType);
+                LiteralToken collectionLiteralToken = new LiteralToken(collection, jsonReadableLiteralText, expectedType);
                 operand = this.bindMethod(collectionLiteralToken) as CollectionConstantNode;
             }
             else
@@ -109,6 +94,70 @@ namespace Microsoft.OData.UriParser
             }
 
             return operand;
+        }
+
+        /// <summary>
+        /// We use JSON deserializer to deserialize collection type.
+        /// This method manipulates a collection value string to be JSON readable by changing individual members as strings.. 
+        /// </summary>
+        /// <param name="originalLiteralText"></param>
+        /// <returns></returns>
+        public static string MakeJSONReadable(string originalLiteralText)
+        {
+            StringBuilder bracketLiteralText = new StringBuilder(originalLiteralText);
+            if (bracketLiteralText[0] == '(')
+            {
+                Debug.Assert(bracketLiteralText[bracketLiteralText.Length - 1] == ')',
+                    "Collection with opening '(' should have corresponding ')'");
+                bracketLiteralText[0] = '[';
+                bracketLiteralText[bracketLiteralText.Length - 1] = ']';
+            }
+
+            if(bracketLiteralText[0]=='[')
+            {
+                int i = 1;
+                while(i<bracketLiteralText.Length)
+                {
+                    if(bracketLiteralText[i]=='\'')
+                    {
+                        
+                        while(i < bracketLiteralText.Length - 1 && bracketLiteralText[++i]!='\'')
+                        {
+                            //Forward the index till the single quotes do not get closed.
+                        }
+                    }
+                    else if(i==1)
+                    {
+                        bracketLiteralText.Insert(i, '\'');
+                        i++;
+                        continue;
+                    }
+                    else if(bracketLiteralText[i]==',')
+                    {
+                        
+                        if(bracketLiteralText[i-1]!='\'')
+                        {
+                            bracketLiteralText.Insert(i, '\'');
+                            i++;
+                        }
+
+                        bracketLiteralText.Insert(i + 1, '\'');
+                        i++;
+                    }
+                    else if(bracketLiteralText[i]==']')
+                    {
+                        if (bracketLiteralText[i - 1] != '\'')
+                        {
+                            bracketLiteralText.Insert(i, '\'');
+                            i++;
+                        }
+                    }
+
+                    i++;
+                    
+                }
+            }
+            return bracketLiteralText.ToString();
         }
     }
 }

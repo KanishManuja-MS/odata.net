@@ -38,6 +38,45 @@ namespace Microsoft.OData.Tests.UriParser.SemanticAst
             collectionConstantNode.Collection.ShouldBeEquivalentTo(expectedList);
         }
 
+
+
+        [Fact]
+        public void GuidColletionThroughLiteralTokenIsSetCorrectly()
+        {
+            const string text = "(27811919BD-323C-44B0-A7FD-0081B730F829','8e3547a2-2f01-41d9-9948-66b9251dbeef')";
+            var expectedType = new EdmCollectionTypeReference(new EdmCollectionType(EdmCoreModel.Instance.GetGuid(false)));
+            object collection = ODataUriConversionUtils.ConvertFromCollectionValue("[27811919BD-323C-44B0-A7FD-0081B730F829,8e3547a2-2f01-41d9-9948-66b9251dbeef]", HardCodedTestModel.TestModel, expectedType);
+            LiteralToken literalToken = new LiteralToken(collection, text, expectedType);
+
+            CollectionConstantNode collectionConstantNode = new CollectionConstantNode(
+                (literalToken.Value as ODataCollectionValue)?.Items, text, expectedType);
+
+            var expectedList = new ConstantNode[] {
+                new ConstantNode(new Guid("27811919BD-323C-44B0-A7FD-0081B730F829"), "27811919BD-323C-44B0-A7FD-0081B730F829", EdmCoreModel.Instance.GetGuid(false)),
+               new ConstantNode(new Guid("8e3547a2-2f01-41d9-9948-66b9251dbeef"), "8e3547a2-2f01-41d9-9948-66b9251dbeef", EdmCoreModel.Instance.GetGuid(false)),
+            };
+
+            collectionConstantNode.Collection.ShouldBeEquivalentTo(expectedList);
+        }
+
+        [Fact]
+        public void DateTimeColletionThroughLiteralTokenIsSetCorrectly()
+        {
+            const string text = "[2012-04-23T18:25:43.511Z,2012-04-23T18:25:43.511Z]";
+            var expectedType = new EdmCollectionTypeReference(new EdmCollectionType(EdmCoreModel.Instance.GetDateTimeOffset(false)));
+            object collection = ODataUriConversionUtils.ConvertFromCollectionValue("[2012-04-23T18:25:43.511Z,2012-04-23T18:25:43.511Z]", HardCodedTestModel.TestModel, expectedType);
+            LiteralToken literalToken = new LiteralToken(collection, text, expectedType);
+
+          //  CollectionConstantNode collectionConstantNode = new CollectionConstantNode(
+            //    (literalToken.Value as ODataCollectionValue)?.Items, text, expectedType);
+
+            var expectedList = new ConstantNode[] {
+                new ConstantNode(new Guid("27811919BD-323C-44B0-A7FD-0081B730F829"), "27811919BD-323C-44B0-A7FD-0081B730F829", EdmCoreModel.Instance.GetGuid(false)),
+               new ConstantNode(new Guid("8e3547a2-2f01-41d9-9948-66b9251dbeef"), "8e3547a2-2f01-41d9-9948-66b9251dbeef", EdmCoreModel.Instance.GetGuid(false)),
+            };
+
+            //collectionConstantNode.Collection.ShouldBeEquivalentTo(expectedList);
+        }
         [Fact]
         public void StringCollectionThroughLiteralTokenIsSetCorrectly()
         {
