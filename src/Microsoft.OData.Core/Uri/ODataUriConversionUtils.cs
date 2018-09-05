@@ -74,7 +74,7 @@ namespace Microsoft.OData
         {
             ODataMessageReaderSettings settings = new ODataMessageReaderSettings();
             settings.Validations &= ~ValidationKinds.ThrowOnUndeclaredPropertyForNonOpenType;
-
+           value = MakeJSONReadable(value);
             using (StringReader reader = new StringReader(value))
             {
                 ODataMessageInfo messageInfo = new ODataMessageInfo
@@ -570,6 +570,70 @@ namespace Microsoft.OData
                     return new StreamReader(stream).ReadToEnd();
                 }
             }
+        }
+
+        /// <summary>
+        /// We use JSON deserializer to deserialize collection type.
+        /// This method manipulates a collection value string to be JSON readable by changing individual members as strings.. 
+        /// </summary>
+        /// <param name="originalLiteralText"></param>
+        /// <returns></returns>
+        public static string MakeJSONReadable(string originalLiteralText)
+        {
+            StringBuilder bracketLiteralText = new StringBuilder(originalLiteralText);
+            if (bracketLiteralText[0] == '(')
+            {
+                Debug.Assert(bracketLiteralText[bracketLiteralText.Length - 1] == ')',
+                    "Collection with opening '(' should have corresponding ')'");
+                bracketLiteralText[0] = '[';
+                bracketLiteralText[bracketLiteralText.Length - 1] = ']';
+            }
+
+            if (bracketLiteralText[0] == '[')
+            {
+                //i - it will always point to the beginning of the new expected element at the start of each iteration of the loop.
+                int i = 1;
+                while (i < bracketLiteralText.Length && bracketLiteralText[i]!=']')
+                {
+                    while(bracketLiteralText[i]==' ')
+                    {
+                        i++;
+                    }
+                    //If already in quotes, skip characters in between.
+                    if (bracketLiteralText[i] == '\'')
+                    {
+
+                        while (i < bracketLiteralText.Length - 1 && bracketLiteralText[++i] != '\'')
+                        {
+                            //Forward the index till the single quotes do not get closed.
+                        }
+                        i++;
+                    }
+                    else // Add quotes
+                    {
+                        bracketLiteralText.Insert(i++, '\'');
+                        while (i < bracketLiteralText.Length && bracketLiteralText[i] != ',' && bracketLiteralText[i]!=']')
+                        {
+                            i++;
+                        }
+
+                        if (bracketLiteralText[i] == ',')
+                        {
+                            bracketLiteralText.Insert(i++, '\'');
+
+                        }
+
+                        if (bracketLiteralText[i] == ']')
+                        {
+                            bracketLiteralText.Insert(i++, '\'');
+
+                        }
+                    }
+                    i++;
+
+                }
+            }
+            return bracketLiteralText.ToString();
         }
     }
 }
