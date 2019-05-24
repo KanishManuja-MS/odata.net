@@ -1037,7 +1037,7 @@ namespace Microsoft.OData.Edm.Validation
                         }
                     }
 
-                    if (composableEscapeFunctions.Count() > 1 )
+                    if (composableEscapeFunctions.Count() > 1)
                     {
                         string escapeFunctionString = String.Join(",", composableEscapeFunctions.Select(c => c.Name).ToArray());
                         context.AddError(
@@ -1962,14 +1962,6 @@ namespace Microsoft.OData.Edm.Validation
                    if (navProps != null)
                    {
                        navProp = navProps.LastOrDefault().Key;
-                   }
-
-                   if (navProp != null && navProp.TargetMultiplicity() == EdmMultiplicity.Many)
-                   {
-                       if (returnCollectionType == null)
-                       {
-                           context.AddError(operation.Location(), EdmErrorCode.OperationWithEntitySetPathResolvesToEntityTypeMismatchesCollectionEntityTypeReturnType, Strings.EdmModel_Validator_Semantic_OperationWithEntitySetPathResolvesToEntityTypeMismatchesCollectionEntityTypeReturnType(operation.Name));
-                       }
                    }
 
                    if (navProp != null && navProp.TargetMultiplicity() != EdmMultiplicity.Many)
