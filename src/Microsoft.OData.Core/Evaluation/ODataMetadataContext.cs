@@ -243,6 +243,15 @@ namespace Microsoft.OData.Evaluation
             // Only apply the conventional template builder on response. On a request we would only report what's on the wire.
             if (resourceState.MetadataBuilder == null)
             {
+                IODataMetadataBuilderFactory metadataBuilderFactory = null;
+                if (this.metadataLevel != null && this.metadataLevel.container != null)
+                {
+                    metadataBuilderFactory = this.metadataLevel.container.GetService<IODataMetadataBuilderFactory>();
+                }
+                else
+                {
+                    metadataBuilderFactory = new ODataMetadataBuilderFactory();;
+                }
                 ODataResourceBase resource = resourceState.Resource;
                 if (this.isResponse && !isDelta)
                 {
@@ -282,16 +291,16 @@ namespace Microsoft.OData.Evaluation
 
                     if (structuredType.IsODataEntityTypeKind())
                     {
-                        resourceState.MetadataBuilder = new ODataConventionalEntityMetadataBuilder(resourceMetadataContext, this, uriBuilder);
+                        resourceState.MetadataBuilder = metadataBuilderFactory.CreateEntityMetadataBuilder(resourceMetadataContext, this, uriBuilder);
                     }
                     else
                     {
-                        resourceState.MetadataBuilder = new ODataConventionalResourceMetadataBuilder(resourceMetadataContext, this, uriBuilder);
+                        resourceState.MetadataBuilder = metadataBuilderFactory.CreateResourceMetadataBuilder(resourceMetadataContext, this, uriBuilder);
                     }
                 }
                 else
                 {
-                    resourceState.MetadataBuilder = new NoOpResourceMetadataBuilder(resource);
+                    resourceState.MetadataBuilder = metadataBuilderFactory.CreateNoOpResourceMetadataBuilder(resource);
                 }
             }
 

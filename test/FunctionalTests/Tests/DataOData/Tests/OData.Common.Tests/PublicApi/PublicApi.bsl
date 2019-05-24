@@ -4976,7 +4976,7 @@ public sealed class Microsoft.OData.ODataBatchOperationHeaders : IEnumerable, IE
 }
 
 public sealed class Microsoft.OData.ODataBatchOperationRequestMessage : IContainerProvider, IODataPayloadUriConverter, IODataRequestMessage, IODataRequestMessageAsync {
-	public const readonly string ContentId = 
+	public const readonly string ContentId =
 
 	System.IServiceProvider Container  { public virtual get; }
 	System.Collections.Generic.IEnumerable`1[[System.String]] DependsOnIds  { public get; }
@@ -4992,7 +4992,7 @@ public sealed class Microsoft.OData.ODataBatchOperationRequestMessage : IContain
 }
 
 public sealed class Microsoft.OData.ODataBatchOperationResponseMessage : IContainerProvider, IODataPayloadUriConverter, IODataResponseMessage, IODataResponseMessageAsync {
-	public const readonly string ContentId = 
+	public const readonly string ContentId =
 
 	System.IServiceProvider Container  { public virtual get; }
 	string GroupId  { public get; }
@@ -8671,4 +8671,3 @@ public sealed class Microsoft.OData.Client.ALinq.UriParser.UnaryOperatorToken : 
 
 	public virtual T Accept (ISyntacticTreeVisitor`1 visitor)
 }
-
